@@ -1,0 +1,4 @@
+jsActiveModel
+
+*What is it?*
+A model layer for client side javascript frameworks to be able to save data to the client and sync to a server side API when a connection is available.
