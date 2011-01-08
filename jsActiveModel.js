@@ -1,7 +1,30 @@
 (function($){
     var methods = {
       init : function(options){
+       $(window).bind(methods.testme);
+      }
+      
+      ,
+
+      get : function(){
+        methods.db_setup();
+        db.transaction(transaction, error, success);
+        
+        function dataHandler( transaction, results ){
+        }
+        function errorHandler(){
+        }
+        db.transaction(
+            function (transaction) {
+                transaction.executeSql("SELECT * FROM " + DBTABLE,
+                    [], // array of values for the ? placeholders
+                    dataHandler, errorHandler);
+            }
+        );
       },
+
+
+
       
       db_setup : function(){
         //check if the client supports storage
@@ -24,6 +47,10 @@
         }
 
       },//end db_setup
+
+
+
+
 
       auto_increment_key : function(){
         function dataHandler(transaction, results)
