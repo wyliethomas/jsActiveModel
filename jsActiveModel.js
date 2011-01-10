@@ -1,26 +1,29 @@
 (function($){
     var methods = {
       init : function(options){
-       $(window).bind(methods.testme);
       }
       
       ,
 
-      get : function(){
-        methods.db_setup();
-        db.transaction(transaction, error, success);
-        
-        function dataHandler( transaction, results ){
+      get : function( url ){
+        database = methods.db_setup();
+        if(database == 'daylight'){
+          methods.get_records( url );
+        }else{
+          db.transaction(transaction, error, success);
+          
+          function dataHandler( transaction, results ){
+          }
+          function errorHandler(){
+          }
+          db.transaction(
+              function (transaction) {
+                  transaction.executeSql("SELECT * FROM " + DBTABLE,
+                      [], // array of values for the ? placeholders
+                      dataHandler, errorHandler);
+              }
+          );
         }
-        function errorHandler(){
-        }
-        db.transaction(
-            function (transaction) {
-                transaction.executeSql("SELECT * FROM " + DBTABLE,
-                    [], // array of values for the ? placeholders
-                    dataHandler, errorHandler);
-            }
-        );
       },
 
 
@@ -38,7 +41,8 @@
               }
           );
         }else{
-          alert("device does not support localStorage. continue with sync.");
+          //not sure how best to handle is_syncable here
+          return 'daylight';
           if(IS_SYNCABLE){
             methods.sync(url);
           }else{
@@ -117,10 +121,10 @@
 
       },//end find_last_id
 
-      get_new_records : function(){
-        methods.find_last_id();
+
+      get_records : function( url ){
         $.ajax({
-            url : pull_url + '?auth_token=' + AUTH_TOKEN,
+            url : url + '?auth_token=' + AUTH_TOKEN,
             method : 'GET',
             dataType : 'jsonp',
             error: function(request, textStatus, error) {
@@ -142,7 +146,8 @@
               }
             }
           });
-      },//end get_new_records
+      },//end get_records
+
 
       create : function( data, url ){
         methods.db_setup();
@@ -193,8 +198,9 @@
       },//end destroy_audit
 
       sync : function(url){
+        methods.find_last_id();
         //pull new data down
-        methods.get_new_records();
+        methods.get_records();
         //loop through the audit table and prepare the post
         function dataHandler(transaction, results)
         {
