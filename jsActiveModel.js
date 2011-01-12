@@ -1,58 +1,66 @@
 (function($){
     var methods = {
       init : function(options){
-      }
-      
-      ,
-
-      get : function( url ){
-        database = methods.db_setup();
-        if(database == 'daylight'){
-          methods.get_records( url );
-        }else{
-          db.transaction(transaction, error, success);
-          
-          function dataHandler( transaction, results ){
-          }
-          function errorHandler(){
-          }
-          db.transaction(
-              function (transaction) {
-                  transaction.executeSql("SELECT * FROM " + DBTABLE,
-                      [], // array of values for the ? placeholders
-                      dataHandler, errorHandler);
-              }
-          );
-        }
-      },
+        var DBTABLE = $(this)[0].DBTABLE;
+        var DBCOLUMNS = $(this)[0].DBCOLUMNS;
+        methods.db_setup(DBTABLE, DBCOLUMNS);
+      },//end init
 
 
 
-      
-      db_setup : function(){
-        //check if the client supports storage
+      db_open : function(){
+        //these vars should have been set on some global var
+        //var DATABASE = '';
+        //var DBVERSION = '';
+        //var DBDESCRIPTION = '';
+        //var DBSIZE = '';
         if(window.openDatabase){
           db = openDatabase(DATABASE, DBVERSION, DBDESCRIPTION, DBSIZE);
-          db.transaction(
-              function (transaction) {
-                DBCOLUMNS = 'id, ' + DBCOLUMNS + ', local_storage_id'; 
-                transaction.executeSql('CREATE TABLE IF NOT EXISTS ' + DBTABLE + ' (' + DBCOLUMNS + ')');
-                transaction.executeSql('CREATE TABLE IF NOT EXISTS ' + DBTABLE + '_AUDIT (' + DBCOLUMNS + ')');
-              }
-          );
+          return true;
         }else{
-          //not sure how best to handle is_syncable here
-          return 'daylight';
-          if(IS_SYNCABLE){
-            methods.sync(url);
-          }else{
-            alert('syncing is disabled for this model also. no data will be saved anywhere... ever.... perhaps just in ram for now. if you close the app the data goes bye bye.');
-          }
+          return false;
         }
+      },//end db_open
 
+      
+
+      db_setup : function(DBTABLE, DBCOLUMNS){
+        if(methods.db_open()){
+          DBCOLUMNS = DBCOLUMNS + ', local_storage_id'; 
+          db.transaction(function (tx) {
+            tx.executeSql('CREATE TABLE IF NOT EXISTS ' + DBTABLE + ' (' + DBCOLUMNS + ')');
+            tx.executeSql('CREATE TABLE IF NOT EXISTS ' + DBTABLE + '_AUDIT (' + DBCOLUMNS + ')');
+          });
+        }else{
+          //methods.get_records( url );
+        }
       },//end db_setup
 
 
+
+      get : function( url, cb ){
+        if(window.openDatabase){
+          var DBTABLE = $(this)[0].DBTABLE;
+          //get results localy
+          db.transaction(function (tx) {
+            tx.executeSql('SELECT * FROM '+ DBTABLE, [], function (tx, results) {
+              data = [];
+              var len = results.rows.length, i;
+              for (i = 0; i < len; i++) {
+                data.push({DBTABLE:{'name': results.rows.item(i).name}}); 
+                //alert(results.rows.item(i).name);
+              }
+              cb(data);
+            });
+          });
+        }else{
+          //get results from api
+          function returnHandler(data){
+            cb(data);
+          }
+          $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', returnHandler);
+        }
+      },//end get
 
 
 
@@ -122,31 +130,6 @@
       },//end find_last_id
 
 
-      get_records : function( url ){
-        $.ajax({
-            url : url + '?auth_token=' + AUTH_TOKEN,
-            method : 'GET',
-            dataType : 'jsonp',
-            error: function(request, textStatus, error) {
-                if (request.status == 401) {
-                    ShowLoginUI(function() {
-                        data = self.Get(url);
-                    });
-                }
-                alert('error: ' + request);
-            },
-            success: function(res){
-              //some error catch here if the data from 
-
-              //if there is local storage then save it, if not just return the response
-              if(window.openDatabase){
-                //insert new records into DB
-              }else{
-                alert('return stuff here: ' + res);
-              }
-            }
-          });
-      },//end get_records
 
 
       create : function( data, url ){
