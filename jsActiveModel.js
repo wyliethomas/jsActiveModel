@@ -65,7 +65,7 @@
 
       create : function( data, url, cb ){
         var DBTABLE = $(this)[0].DBTABLE;
-        methods.auto_increment_key();
+        methods.auto_increment_key(DBTABLE);
         db.transaction(postit, error, success);
 
         //openDatabase callbacks
@@ -98,7 +98,7 @@
 
 
 
-      auto_increment_key : function(){
+      auto_increment_key : function(DBTABLE){
         function dataHandler(transaction, results)
         {
             // Handle the results
@@ -129,6 +129,9 @@
         );
 
       },//end auto_increment_key
+
+
+
 
       find_last_id : function(){
         //get the last id so it can be used as a marker during sync
