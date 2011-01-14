@@ -38,8 +38,7 @@
 
 
 
-      get : function( url, cb ){
-        if(window.openDatabase){
+      get : function( url, cb ){ if(window.openDatabase){
           var DBTABLE = $(this)[0].DBTABLE;
           //get results localy
           db.transaction(function (tx) {
@@ -61,6 +60,41 @@
           $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', returnHandler);
         }
       },//end get
+
+
+
+      create : function( data, url, cb ){
+        var DBTABLE = $(this)[0].DBTABLE;
+        methods.auto_increment_key();
+        db.transaction(postit, error, success);
+
+        //openDatabase callbacks
+        function postit(jdb){
+          var keys = ''; //add local_id as a default to all tables
+          var values = '';
+
+          for(var item in data) {
+              keys = keys + "'" + item + "', ";
+              values = values + "'" + data[item] + "', ";
+          }
+
+          keys = 'id, ' + keys + ' local_storage_id';
+          values = 'null, ' + values + ' ' + last_local_id;
+
+          jdb.executeSql('INSERT INTO ' + DBTABLE + '  (' + keys + ') VALUES (' + values + ')');
+          jdb.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT  (' + keys + ') VALUES (' + values + ')');
+        }
+        function error(jdb, err){
+          alert("Error processing SQL: " + jdb.message);
+        }
+        function success(jdb){
+          //if this model is_syncable and API is online, trigger sync method
+          if($(this)[0].IS_SYNCABLE){
+            methods.sync(url);
+          }
+        }  
+
+      },//end create
 
 
 
@@ -132,38 +166,6 @@
 
 
 
-      create : function( data, url ){
-        methods.db_setup();
-        methods.auto_increment_key();
-        db.transaction(postit, error, success);
-
-        //openDatabase callbacks
-        function postit(jdb){
-          var keys = ''; //add local_id as a default to all tables
-          var values = '';
-
-          for(var key in data) {
-              keys = keys + "'" + key + "', ";
-              values = values + "'" + data[key] + "', ";
-          }
-
-          keys = 'id, ' + keys + ' local_storage_id';
-          values = 'null, ' + values + ' ' + last_local_id;
-
-          jdb.executeSql('INSERT INTO ' + DBTABLE + '  (' + keys + ') VALUES (' + values + ')');
-          jdb.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT  (' + keys + ') VALUES (' + values + ')');
-        }
-        function error(jdb, err){
-          alert("Error processing SQL: " + jdb.message);
-        }
-        function success(jdb){
-          //if this model is_syncable and API is online, trigger sync method
-          if(IS_SYNCABLE){
-            methods.sync(url);
-          }
-        }  
-
-      },//end create
 
       update : function(options){
       },//end update
