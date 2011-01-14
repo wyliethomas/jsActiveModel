@@ -65,6 +65,8 @@
 
       create : function( data, url, cb ){
         var DBTABLE = $(this)[0].DBTABLE;
+        var IS_SYNCABLE = $(this)[0].IS_SYNCABLE;
+
         methods.auto_increment_key(DBTABLE);
         db.transaction(postit, error, success);
 
@@ -89,8 +91,8 @@
         }
         function success(jdb){
           //if this model is_syncable and API is online, trigger sync method
-          if($(this)[0].IS_SYNCABLE){
-            methods.sync(url);
+          if(IS_SYNCABLE){
+            methods.sync(DBTABLE, url);
           }
         }  
 
@@ -133,7 +135,7 @@
 
 
 
-      find_last_id : function(){
+      find_last_id : function(DBTABLE){
         //get the last id so it can be used as a marker during sync
         function dataHandler(transaction, results)
         {
@@ -185,10 +187,12 @@
         );
       },//end destroy_audit
 
-      sync : function(url){
-        methods.find_last_id();
-        //pull new data down
-        methods.get_records();
+
+
+
+
+      sync : function(DBTABLE, url){
+        methods.find_last_id(DBTABLE);
         //loop through the audit table and prepare the post
         function dataHandler(transaction, results)
         {
@@ -197,7 +201,6 @@
                 // Each row is a standard JavaScript array indexed by
                 // column names.
                 var row = results.rows.item(i);
-                alert("row: " + row['name']);
                 methods.send_request(row);
             }
         }
@@ -220,10 +223,16 @@
             }
         );
       },//end sync
+
+
+
       
-      send_request : function(row){
-        var params = 'a[name]=' + row['name'];
-        var data = '&' + encodeURI(params);
+      send_request : function(DBTABLE, row){
+        var params = '';
+        for(var item in row) {
+          params = params + '&' + DBTABLE + '[' + item + ']=' + row[item];
+        }
+        var data = encodeURI(params);
 
         $.ajax({
             url : url + '?auth_token=' + AUTH_TOKEN + data,
@@ -249,6 +258,9 @@
             }
           });
       },//end send_request
+
+
+
 
       merge : function(res, local_storage_id){
         //update the table with the ID from the server
