@@ -38,7 +38,8 @@
 
 
 
-      get : function( url, cb ){ if(window.openDatabase){
+      get : function( url, cb ){ 
+        if(window.openDatabase){
           var DBTABLE = $(this)[0].DBTABLE;
           //get results localy
           db.transaction(function (tx) {
@@ -92,11 +93,62 @@
         function success(jdb){
           //if this model is_syncable and API is online, trigger sync method
           if(IS_SYNCABLE){
-            methods.sync(DBTABLE, url);
+            methods.sync(DBTABLE, url, function(syncHandle){
+              alert(syncHandle);
+              cb(syncHandle);
+            });
           }
+          //should catch an else here if model is not syncable... not sure yet
         }  
 
       },//end create
+
+      testsync : function(DBTABLE, url, syncHandle){
+        methods.testlastid(DBTABLE, function(last_id_handle){
+          syncHandle(last_id_handle);
+        });
+      },
+      testlastid : function(DBTABLE, last_id_handle){
+        last_id_handle('i am last id');
+      },
+
+
+      sync : function(DBTABLE, url, syncHandle){
+        //need to get the lastID at some point
+        //methods.find_last_id(DBTABLE, function(lastIdHandle){
+        //});
+        //loop through the audit table and prepare the post
+        function dataHandler(transaction, results)
+        {
+          // Handle the results
+          for (var i=0; i<results.rows.length; i++) {
+            // Each row is a standard JavaScript array indexed by
+            // column names.
+            var row = results.rows.item(i);
+            methods.send_request(DBTABLE, row, function(sendRequestHandle){
+              syncHandle(sendRequestHandle);
+            });
+          }
+        }
+        function errorHandler(transaction, error)
+        {
+            // error.message is a human-readable string.
+            // error.code is a numeric error code
+            alert('Oops.  Error was '+error.message+' (Code '+error.code+')');
+         
+            // Handle errors here
+            var we_think_this_error_is_fatal = true;
+            if (we_think_this_error_is_fatal) return true;
+            return false;
+        }
+        db.transaction(
+          function (transaction) {
+            transaction.executeSql("SELECT * FROM " + DBTABLE + "_AUDIT;",
+                [], // array of values for the ? placeholders
+                dataHandler, errorHandler);
+          }
+        );
+      },//end sync
 
 
 
@@ -189,48 +241,14 @@
 
 
 
-
-
-      sync : function(DBTABLE, url){
-        methods.find_last_id(DBTABLE);
-        //loop through the audit table and prepare the post
-        function dataHandler(transaction, results)
-        {
-            // Handle the results
-            for (var i=0; i<results.rows.length; i++) {
-                // Each row is a standard JavaScript array indexed by
-                // column names.
-                var row = results.rows.item(i);
-                methods.send_request(row);
-            }
-        }
-        function errorHandler(transaction, error)
-        {
-            // error.message is a human-readable string.
-            // error.code is a numeric error code
-            alert('Oops.  Error was '+error.message+' (Code '+error.code+')');
-         
-            // Handle errors here
-            var we_think_this_error_is_fatal = true;
-            if (we_think_this_error_is_fatal) return true;
-            return false;
-        }
-        db.transaction(
-            function (transaction) {
-                transaction.executeSql("SELECT * FROM " + DBTABLE + "_AUDIT;",
-                    [], // array of values for the ? placeholders
-                    dataHandler, errorHandler);
-            }
-        );
-      },//end sync
-
-
-
       
-      send_request : function(DBTABLE, row){
+      send_request : function(DBTABLE, row, sendRequestHandle){
         var params = '';
         for(var item in row) {
-          params = params + '&' + DBTABLE + '[' + item + ']=' + row[item];
+          //need to filter out local_storage_id
+          if(item != 'local_storage_id'){
+            params = params + '&' + DBTABLE + '[' + item + ']=' + row[item];
+          }
         }
         var data = encodeURI(params);
 
@@ -251,9 +269,13 @@
 
               //if there is local storage then save it, if not just return the response
               if(window.openDatabase){
-                methods.merge(res, row['local_storage_id']);
+                methods.merge(res, row['local_storage_id'], function(mergeHandle){
+                  sendRequestHandle(mergeHandle);
+                });
+                //methods.merge(res, row['local_storage_id']);
               }else{
                 alert('return stuff here: ' + res);
+                sendRequestHandle(res);
               }
             }
           });
@@ -262,7 +284,7 @@
 
 
 
-      merge : function(res, local_storage_id){
+      merge : function(res, local_storage_id, mergeHandle){
         //update the table with the ID from the server
         //update the database
         db.transaction(
@@ -271,7 +293,8 @@
           }
         );
         //purge the audit table
-        methods.destroy_audit(local_storage_id);
+        //methods.destroy_audit(local_storage_id);
+        mergeHandle('got to merge');
         //return some final response here
       }//end merge
     };
