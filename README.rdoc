@@ -2,3 +2,52 @@ jsActiveModel
 
 *What is it?*
 A model layer for client side javascript frameworks to be able to save data to the client and sync to a server side API when a connection is available.
+
+Example:
+
+//In your controller
+Post.set(post_data, function(data){
+  alert(data);
+});
+
+
+//Your Model
+var Post =function(){
+  function initPost(){
+    $(this).jsActiveModel('init');
+  }
+
+  function getPost(cb){
+    url = BASE + '/api/b/get.json';
+    $(this).jsActiveModel('get', url, cb);
+  }
+
+  function setPost(post_data, cb){
+    url = BASE + '/api/b/post.json';
+    $(this).jsActiveModel('create', post_data, url, cb);
+  }
+
+  function updatePost(){
+    url = BASE + '/api/b/update.json';
+    $(this).jsActiveModel('update', post_data, url, cb);
+  }
+
+  function deletePost(){
+    url = BASE + '/api/b/destroy.json';
+    $(this).jsActiveModel('destroy', url, cb);
+  }
+
+
+
+  return {
+    DBTABLE : 'post',
+    DBCOLUMNS : 'id, name, body, created_at, updated_at,
+    IS_SYNCABLE : true,
+    init: initPost,
+    set: setPost,
+    get: getPost,
+    update: updatePost,
+    destroy: deletePost
+  }
+}();
+
