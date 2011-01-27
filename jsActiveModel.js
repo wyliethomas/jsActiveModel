@@ -73,12 +73,12 @@
               data = [];
               var len = results.rows.length, i;
               for (i = 0; i < len; i++) {
-                for(var column in results.rows.item(i)){
-                  debugger
-                }
-                data.push({DBTABLE:{'name': results.rows.item(i).name, 'local_storage_id': results.rows.item(i).local_storage_id}}); 
-                //alert(results.rows.item(i).name);
+                $.each(results.rows.item(i), function(key, value){
+                  data.push({key: value}); 
+                });
+                //data.push({DBTABLE:{'name': results.rows.item(i).name, 'local_storage_id': results.rows.item(i).local_storage_id}}); 
               }
+              debugger
               cb(data);
             });
           });
@@ -295,7 +295,6 @@
           }
         }
         var data = encodeURI(params);
-        debugger
 
         $.ajax({
             url : url + '?auth_token=' + AUTH_TOKEN + data,
