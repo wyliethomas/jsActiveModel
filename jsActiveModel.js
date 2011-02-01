@@ -74,9 +74,9 @@
               var len = results.rows.length, i;
               for (i = 0; i < len; i++) {
                 $.each(results.rows.item(i), function(key, value){
-                  data.push({key: value}); 
+                  //alert(key + ': ' + value);
+                  data[key] = value;
                 });
-                //data.push({DBTABLE:{'name': results.rows.item(i).name, 'local_storage_id': results.rows.item(i).local_storage_id}}); 
               }
               debugger
               cb(data);
