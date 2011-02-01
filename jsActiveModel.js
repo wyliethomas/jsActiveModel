@@ -38,7 +38,7 @@
 
 
 
-      find : function( id, url, findClientHandle){
+      find : function( id, url, findHandle){
         if(window.openDatabase){
           var DBTABLE = $(this)[0].DBTABLE;
           //get results localy
@@ -50,13 +50,13 @@
                 data.push({DBTABLE:{'name': results.rows.item(i).name}}); 
                 //alert(results.rows.item(i).name);
               }
-              findClientHandle(data);
+              findHandle(data);
             });
           });
         }else{
           //get results from api
           function returnHandler(data){
-            findClientHandle(data);
+            findHandle(data);
           }
           $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', returnHandler);
         }
@@ -64,28 +64,28 @@
 
 
 
-      all : function( url, cb ){ 
+      all : function( url, allHandle ){ 
         if(window.openDatabase){
           var DBTABLE = $(this)[0].DBTABLE;
           //get results localy
           db.transaction(function (tx) {
             tx.executeSql('SELECT * FROM '+ DBTABLE, [], function (tx, results) {
-              data = [];
+              data = []
               var len = results.rows.length, i;
               for (i = 0; i < len; i++) {
+                data.push({jsmodel: i});
                 $.each(results.rows.item(i), function(key, value){
                   //alert(key + ': ' + value);
                   data[key] = value;
                 });
               }
-              debugger
-              cb(data);
+              allHandle(data);
             });
           });
         }else{
           //get results from api
           function returnHandler(data){
-            cb(data);
+            allHandle(data);
           }
           $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', returnHandler);
         }
@@ -93,7 +93,7 @@
 
 
 
-      create : function( data, url, cb ){
+      create : function( data, url, createHandle ){
         var DBTABLE = $(this)[0].DBTABLE;
         var IS_SYNCABLE = $(this)[0].IS_SYNCABLE;
 
@@ -125,7 +125,7 @@
           if(IS_SYNCABLE){
             methods.sync(DBTABLE, url, function(syncHandle){
               alert(syncHandle);
-              cb(syncHandle);
+              createHandle(syncHandle);
             });
           }
           //should catch an else here if model is not syncable... not sure yet
