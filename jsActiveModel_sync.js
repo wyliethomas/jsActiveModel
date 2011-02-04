@@ -1,72 +1,107 @@
+
+
 //api
-var JSAM = function(){
+var JSActiveModel = function(){
 };
-JSAM.parms = {
+
+JSActiveModel.inheritKlass = function(k1, k2){
+  k1.klass = k1["klass"] || {};
+  for (var p in k2.klass) {
+    k1.klass[p] = k2.klass[p];
+  }
+}
+
+JSActiveModel.hideKlass = function(model){
+  var wrapFunc = function(func) {
+    return function() {
+      return func.apply(model,arguments);
+    };
+  };
+
+  for(var i in model.klass){
+    model[i] = wrapFunc( model.klass[i] );
+  }
+}
+
+JSActiveModel.scopeFunction = function( target, source, scope ){
+}
+
+JSActiveModel.parms = {
   foo : 'bar',
   baz : 'boo'
 }
 
-JSAM.prototype.update = function(){
-  console.log('I am a instance method of JSAM#update');
+JSActiveModel.prototype = {
+  update : function(){
+    return 'here i am'
+  },
+  creating : function(){
+    return 'i am create'
+  }
 }
 
-JSAM.klass = {};
+JSActiveModel.klass = {
+  all : function(){
+    return 'im still here';
+  },
+  find : function(){
+  }
+};
 
-JSAM.klass.all = function(){
-  console.log('I am a class instance of JSAM#all');
-}
+JSActiveModel.hideKlass(JSActiveModel);
+
+
 
 
 
 
 
 //local database
-var JSAM_SYNC = function(){
+var JSActiveModelSync = function(){
 };
-JSAM_SYNC.parms = {
+
+JSActiveModelSync.prototype = new JSActiveModel();
+JSActiveModelSync.prototype.constructor = JSActiveModelSync;
+JSActiveModelSync.prototype.parent = JSActiveModel.prototype;
+
+JSActiveModel.inheritKlass(JSActiveModelSync, JSActiveModel);
+
+JSActiveModelSync.parms = {
 }
 
-JSAM_SYNC.prototype = new JSAM();
-JSAM_SYNC.prototype.constructor = JSAM_SYNC;
-JSAM_SYNC.prototype.parent = JSAM.prototype;
-
-
-JSAM_SYNC.prototype.create = function(){
-  console.log('this is JSAM_SYNC create');
+//proto methods
+JSActiveModelSync.prototype.create = function(){
+  return "I am create on sync"
 }
 
-JSAM_SYNC.isKlass = {};
-JSAM_SYNC.call(JSAM_SYNC.isKlass, JSAM.klass);
-
-JSAM_SYNC.isKlass.foo = function(){
-}
-
-
-function mergeKlass(c1, c2) {
-  for (var p in c2) {
-    try {
-      if ( c2[p].constructor==Object ) {
-        c1[p] = mergeKlass(c1[p], c2[p]);
-      } else {
-        c1[p] = c2[p];
-      }
-    } catch(e) {
-      c1[p] = c2[p];
-    }
+//klass methods
+JSActiveModelSync.klass = {
+  foo : function(){
   }
-  return c1;
 }
 
-var activeModel = mergeKlass(JSAM, JSAM_SYNC);
-debugger
+JSActiveModel.hideKlass(JSActiveModelSync);
+
+
+
+
 
 
 //app model
 var Jet = function(){};
-Jet.prototype = new JSAM_SYNC();
-Jet.prototype.contstructor = Jet;
+Jet.parms = {
+  DBTABLE: 'jet',
+  DBCOLUMNS: []
+};
+Jet.prototype = new JSActiveModelSync();
+Jet.prototype.constructor = Jet;
+Jet.prototype.parent = JSActiveModelSync.prototype;
 
-jet = new JSAM_SYNC;
+JSActiveModel.inheritKlass(Jet, JSActiveModelSync);
+JSActiveModel.hideKlass(Jet);
+
+
+jet = new JSActiveModelSync;
 jet.create('foo');
 
 Jet.update;
