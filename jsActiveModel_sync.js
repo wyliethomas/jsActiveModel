@@ -4,27 +4,32 @@
 var JSActiveModel = function(){
 };
 
+JSActiveModel.scopeFunction = function( func, scope ){
+  return function() {
+    return func.apply(model,arguments);
+  };
+}
+
+JSActiveModel.scopeFunctions = function( target, source, scope ){
+  for(var i in source){
+    target[i] = scopeFunction( source[i], scope );
+  }
+}
+
 JSActiveModel.inheritKlass = function(k1, k2){
   k1.klass = k1["klass"] || {};
   for (var p in k2.klass) {
     k1.klass[p] = k2.klass[p];
   }
+  k1.parent = k1['parent'] || {};
+  JSActiveModel.scopeFunctions( k1.parent, k2.klass, k1 );
 }
 
 JSActiveModel.hideKlass = function(model){
-  var wrapFunc = function(func) {
-    return function() {
-      return func.apply(model,arguments);
-    };
-  };
-
-  for(var i in model.klass){
-    model[i] = wrapFunc( model.klass[i] );
-  }
+  model.klass = model['klass'] || {};
+  JSActiveModel.scopeFunctions( model, model,klass, model );
 }
 
-JSActiveModel.scopeFunction = function( target, source, scope ){
-}
 
 JSActiveModel.parms = {
   foo : 'bar',
