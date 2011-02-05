@@ -26,8 +26,7 @@ JSActiveModel.inheritKlass = function(k1, k2){
 }
 
 JSActiveModel.hideKlass = function(model){
-  model.klass = model['klass'] || {};
-  JSActiveModel.scopeFunctions( model, model,klass, model );
+  if (model['klass']) JSActiveModel.scopeFunctions( model, model.klass, model );
 }
 
 
