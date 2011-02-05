@@ -6,7 +6,7 @@ var JSActiveModel = function(){
 
 JSActiveModel.scopeFunction = function( func, scope ){
   return function() {
-    return func.apply(model,arguments);
+    return func.apply(scope, arguments);
   };
 }
 
