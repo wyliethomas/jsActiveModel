@@ -12,7 +12,7 @@ JSActiveModel.scopeFunction = function( func, scope ){
 
 JSActiveModel.scopeFunctions = function( target, source, scope ){
   for(var i in source){
-    target[i] = scopeFunction( source[i], scope );
+    target[i] = JSActiveModel.scopeFunction( source[i], scope );
   }
 }
 
