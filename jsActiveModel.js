@@ -9,6 +9,7 @@
 
 
       db_open : function(){
+        //**** I think this needs to be set on page load. I dont think it will work inline *****
         //these vars should have been set on some global var
         //var DATABASE = '';
         //var DBVERSION = '';

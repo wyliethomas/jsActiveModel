@@ -80,7 +80,11 @@ JSActiveModelSync.parms = {
 //proto methods
 JSActiveModelSync.prototype.init = function(parms){
   console.log('second: init');
-  JSActiveModelSync.prototype.dbsetup(parms);
+  var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+  db.transaction(function (tx) {  
+     //tx.executeSql('CREATE TABLE IF NOT EXISTS LOGS (id unique, log)');
+  });
+  //JSActiveModelSync.prototype.dbsetup(parms);
 }
 JSActiveModelSync.prototype.dbopen = function(parms){
   console.log('fourth: dbopen');
@@ -123,7 +127,8 @@ JSActiveModelSync.prototype.destroy = function(){
 JSActiveModelSync.klass = {
   all : function(){
     console.log('first: all');
-    JSActiveModelSync.prototype.init(this.parms); //make sure db is available
+    //JSActiveModelSync.prototype.init(this.parms); //make sure db is available
+/*
     DBTABLE = this.parms['DBTABLE'];
     db.transaction(function (tx) {
       console.log(DBTABLE);
@@ -137,6 +142,7 @@ JSActiveModelSync.klass = {
         //allHandle(data);
       });
     });
+*/
   },
   find : function(){
           //get results localy
@@ -183,7 +189,6 @@ JSActiveModel.inheritKlass(Jet, JSActiveModelSync);
 JSActiveModel.hideKlass(Jet);
 
 
-jet = new JSActiveModelSync;
-jet.create('foo');
-
+//jet = new JSActiveModelSync;
+//jet.create('foo');
 Jet.all();
