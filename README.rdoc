@@ -5,49 +5,22 @@ A model layer for client side javascript frameworks to be able to save data to t
 
 Example:
 
-//In your controller
-Post.set(post_data, function(data){
-  alert(data);
-});
+In the model:
+Project.parms = {
+  DATABASE: 'myapp',
+  DBVERSION: '1.0',
+  DBDESCRIPTION: 'myproject description',
+  DBSIZE: 2 * 1024 * 1024,
+  DBTABLE: 'projects',
+  DBCOLUMNS: ['id', 'name', 'flag_archive', 'created_at', 'updated_at']
+};
+Project.prototype = new JSActiveModelSync();
+Project.prototype.constructor = Project;
+Project.prototype.parent = JSActiveModelSync.prototype;
+
+JSActiveModel.inheritKlass(Project, JSActiveModelSync);
+JSActiveModel.hideKlass(Project);
 
 
-//Your Model
-var Post =function(){
-  function initPost(){
-    $(this).jsActiveModel('init');
-  }
-
-  function getPost(cb){
-    url = BASE + '/api/b/get.json';
-    $(this).jsActiveModel('get', url, cb);
-  }
-
-  function setPost(post_data, cb){
-    url = BASE + '/api/b/post.json';
-    $(this).jsActiveModel('create', post_data, url, cb);
-  }
-
-  function updatePost(){
-    url = BASE + '/api/b/update.json';
-    $(this).jsActiveModel('update', post_data, url, cb);
-  }
-
-  function deletePost(){
-    url = BASE + '/api/b/destroy.json';
-    $(this).jsActiveModel('destroy', url, cb);
-  }
-
-
-
-  return {
-    DBTABLE : 'post',
-    DBCOLUMNS : 'id, name, body, created_at, updated_at,
-    IS_SYNCABLE : true,
-    init: initPost,
-    set: setPost,
-    get: getPost,
-    update: updatePost,
-    destroy: deletePost
-  }
-}();
-
+Then in the controller:
+Project.all();
