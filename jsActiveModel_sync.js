@@ -9,14 +9,11 @@ JSActiveModel.inheritKlass(JSActiveModelSync, JSActiveModel);
 
 JSActiveModelSync.parms = {
 }
-
 //proto methods
 JSActiveModelSync.prototype.init = function(parms){
-  console.log('second: init');
   JSActiveModelSync.prototype.dbsetup(parms);
 }
 JSActiveModelSync.prototype.dbopen = function(parms){
-  console.log('fourth: dbopen');
   //these vars should have been set on some global var
   if(window.openDatabase){
     var DATABASE = parms['DATABASE'];
@@ -30,7 +27,6 @@ JSActiveModelSync.prototype.dbopen = function(parms){
   }
 }
 JSActiveModelSync.prototype.dbsetup = function(parms){
-  console.log('third: dbsetup');
   if(JSActiveModelSync.prototype.dbopen(parms)){
     var DBTABLE = parms['DBTABLE'];
     var DBCOLUMNS = parms['DBCOLUMNS'];
@@ -44,51 +40,63 @@ JSActiveModelSync.prototype.dbsetup = function(parms){
   }
 }
 JSActiveModelSync.prototype.update = function(){
-  console.log('PARMS: ', this.parms);
 }
 JSActiveModelSync.prototype.create = function(){
 }
 JSActiveModelSync.prototype.destroy = function(){
 }
 
+
+
+
+
+
 //klass methods
 JSActiveModelSync.klass = {
   all : function(){
-    console.log('first: all');
-    JSActiveModelSync.prototype.init(this.parms); //make sure db is available
+    JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
     DBTABLE = this.parms['DBTABLE'];
     db.transaction(function (tx) {
-      console.log(DBTABLE);
-      tx.executeSql('SELECT * FROM ' + DBTABLE, function (tx, results) {
-        console.log('here i am');
+      tx.executeSql('SELECT * FROM ' + DBTABLE, [], successHandler, errorHandler);
+    });
+    successHandler = function(tx, results){
+      if(results.rows.length == 0){
+        console.log('got no rows');
+        data = '0';
+          //insert data because the table's empty
+      } else {
+        console.log('got some rows');
         data = [];
         var len = results.rows.length, i;
         for (i = 0; i < len; i++) {
           //data.push({DBTABLE:{'name': results.rows.item(i).name}}); 
         }
-        //allHandle(data);
-      });
-    });
+      }
+    };
+    errorHandler = function(tx, results){
+      console.log('got an error');
+    };
   },
   find : function(){
-          //get results localy
-          db.transaction(function (tx) {
-            tx.executeSql('SELECT * FROM '+ DBTABLE +' WHERE local_storage_id = ?', [id], function (tx, results) {
-              data = [];
-              var len = results.rows.length, i;
-              for (i = 0; i < len; i++) {
-                data.push({DBTABLE:{'name': results.rows.item(i).name}}); 
-                //alert(results.rows.item(i).name);
-              }
-              findHandle(data);
-            });
-          });
+    db.transaction(function (tx) {
+      tx.executeSql('SELECT * FROM '+ DBTABLE +' WHERE local_storage_id = ?', [id], function (tx, results) {
+        data = [];
+        var len = results.rows.length, i;
+        for (i = 0; i < len; i++) {
+          data.push({DBTABLE:{'name': results.rows.item(i).name}}); 
+          //alert(results.rows.item(i).name);
+        }
+        findHandle(data);
+      });
+    });
   },
   where : function(){
   },
   find_by_sql : function(){
   }
 }
+
+
 
 JSActiveModel.hideKlass(JSActiveModelSync);
 
