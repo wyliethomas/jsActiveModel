@@ -55,6 +55,32 @@ JSActiveModelSync.prototype.auto_increment = function(DBTABLE, auto_handle){
   }
   db.transaction(queryHandle, errorHandle);
 }
+JSActiveModelSync.prototype.audit_update = function(DBTABLE, id, keyvals){
+  function queryHandle(tx){
+    tx.executeSql('UPDATE ' + DBTABLE + '_AUDIT SET ' + keyvals + ' WHERE local_storage_id = ' + id );
+  }
+  function querySuccess(tx, results){
+    console.log('success');
+  }
+  function errorHandle(err){
+    console.log('fail');
+    handler(err);
+  }
+  db.transaction(queryHandle, errorHandle);
+}
+JSActiveModelSync.prototype.audit_delete = function(DBTABLE, id){
+  function queryHandle(tx){
+    tx.executeSql('DELETE FROM ' + DBTABLE + '_AUDIT WHERE local_storage_id = ' + id );
+  }
+  function querySuccess(tx, results){
+    console.log('success');
+  }
+  function errorHandle(err){
+    console.log('fail');
+    handler(err);
+  }
+  db.transaction(queryHandle, errorHandle);
+}
 
 
 
@@ -114,6 +140,8 @@ JSActiveModelSync.klass = {
         tx.executeSql('UPDATE ' + DBTABLE + ' SET ' + keyvals + ' WHERE local_storage_id = ' + id );
       }
       function successHandle(){
+        //audit table cleanup
+        JSActiveModelSync.prototype.audit_update(DBTABLE, id, keyvals);
         //trigger sync here?
       }
       function errorHandle(err){
@@ -156,6 +184,8 @@ JSActiveModelSync.klass = {
         tx.executeSql('DELETE FROM ' + DBTABLE + ' WHERE local_storage_id = ' + id );
       }
       function successHandle(){
+        //audit table cleanup
+        JSActiveModelSync.prototype.audit_delete(DBTABLE, id)
         //trigger sync here?
       }
       function errorHandle(err){
