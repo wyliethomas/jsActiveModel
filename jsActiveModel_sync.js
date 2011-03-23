@@ -72,7 +72,7 @@ JSActiveModelSync.klass = {
     }
 
     function querySuccess(tx, results){
-      if(typeof(success) == 'function'){
+      if(typeof(handler) == 'function'){
         handler(results.rows);
       }
     }
@@ -83,13 +83,43 @@ JSActiveModelSync.klass = {
 
     db.transaction(queryHandle, errorHandle);
   },
-  find : function(){
+  find : function(id, handler){
+    function queryHandle(tx){
+      tx.executeSql('SELECT * FROM ' + DBTABLE + ' WHERE local_storage_id = ' + id, [], querySuccess, errorHandle );
+    }
+    function querySuccess(tx, results){
+      if(typeof(handler) == 'function'){
+        handler(results.rows);
+      }
+    }
+    function errorHandle(err){
+      handler(err);
+    }
+    db.transaction(queryHandle, errorHandle);
   },
   find_by_sql : function(){
   },
-  update : function(){
+  update : function(id, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
-    console.log('this is update');
+    DBCOLUMNS = this.parms['DBCOLUMNS'];
+      function insertHandle(tx, results){
+        //prep post_data to have right values for right columns
+        keyvals = '';
+        for(column in DBCOLUMNS){
+         if(DBCOLUMNS[column] in post_data){
+          keyvals += DBCOLUMNS[column] + '="' + post_data[DBCOLUMNS[column]] +'", ';
+         }
+        }
+        keyvals = keyvals.substring(0, keyvals.length-2);
+        tx.executeSql('UPDATE ' + DBTABLE + ' SET ' + keyvals + ' WHERE local_storage_id = ' + id );
+      }
+      function successHandle(){
+        //trigger sync here?
+      }
+      function errorHandle(err){
+        handler(err);
+      }
+      db.transaction(insertHandle, errorHandle, successHandle);
   },//end update
   create : function(post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
@@ -119,7 +149,19 @@ JSActiveModelSync.klass = {
       db.transaction(insertHandle, errorHandle, successHandle);
     }); //auto increment before creating the record
   },//end create
-  destroy : function(){
+  destroy : function(id){
+    DBTABLE = this.parms['DBTABLE'];
+    DBCOLUMNS = this.parms['DBCOLUMNS'];
+      function insertHandle(tx, results){
+        tx.executeSql('DELETE FROM ' + DBTABLE + ' WHERE local_storage_id = ' + id );
+      }
+      function successHandle(){
+        //trigger sync here?
+      }
+      function errorHandle(err){
+        handler(err);
+      }
+      db.transaction(insertHandle, errorHandle, successHandle);
   }//end destroy
 }
 
