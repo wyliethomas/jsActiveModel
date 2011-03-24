@@ -115,7 +115,7 @@ JSActiveModelSync.klass = {
     }
     function querySuccess(tx, results){
       if(typeof(handler) == 'function'){
-        handler(results.rows);
+        handler(results.rows.item(0));
       }
     }
     function errorHandle(err){
@@ -192,7 +192,10 @@ JSActiveModelSync.klass = {
         handler(err);
       }
       db.transaction(insertHandle, errorHandle, successHandle);
-  }//end destroy
+  },//end destroy
+  save : function(){
+    console.log('test');
+  }//end save
 }
 
 
