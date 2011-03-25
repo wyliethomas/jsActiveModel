@@ -42,14 +42,17 @@ JSActiveModel.prototype = {
 }
 
 JSActiveModel.klass = {
-  all : function(){
+  all : function(url, handler){
+    $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', function(j){
+      //TODO:if this is syncable then we need to sync this pull into the local DB
+      handler(j);
+    });
   },
-  where : function(){
-  },
-  find : function(){
-    $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', returnHandler);
-  },
-  find_by_sql : function(){
+  find : function(url, handler){
+    $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', function(j){
+      //TODO:if this is syncable then we need to sync this pull into the local DB
+      handler(j);
+    });
   }
 };
 
