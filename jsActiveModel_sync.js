@@ -143,7 +143,7 @@ JSActiveModelSync.klass = {
   },
   find_by_sql : function(){
   },
-  update : function(id, post_data, handler){
+  update : function(url, id, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
       function insertHandle(tx, results){
@@ -165,9 +165,15 @@ JSActiveModelSync.klass = {
       function errorHandle(err){
         handler(err);
       }
+    if(this.parms['isSyncable']){
       db.transaction(insertHandle, errorHandle, successHandle);
+    }else{
+      JSActiveModel.prototype.update(url, function(j){
+        handler(j);
+      });
+    }
   },//end update
-  create : function(post_data, handler){
+  create : function(url, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
     JSActiveModelSync.prototype.auto_increment(DBTABLE, function(auto_handle){
@@ -192,8 +198,15 @@ JSActiveModelSync.klass = {
       function errorHandle(err){
         handler(err);
       }
-      db.transaction(insertHandle, errorHandle, successHandle);
     }); //auto increment before creating the record
+    if(this.parms['isSyncable']){
+      db.transaction(insertHandle, errorHandle, successHandle);
+    }else{
+      console.log(url);
+      JSActiveModel.prototype.create(url, function(j){
+        handler(j);
+      });
+    }
   },//end create
   destroy : function(id){
     DBTABLE = this.parms['DBTABLE'];

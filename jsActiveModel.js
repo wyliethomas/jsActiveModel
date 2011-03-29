@@ -33,13 +33,31 @@ JSActiveModel.parms = {
 }
 
 JSActiveModel.prototype = {
-  update : function(){
+  update : function(url, handler){
+    JSActiveModel.post(url, post_data, function(i){
+    });
   },
-  create : function(){
+  create : function(url, handler){
+    JSActiveModel.post(url, post_data, function(i){
+    });
   },
   destroy : function(){
   }
 }
+
+JSActiveModel.post = function(url, post_data, handler){
+  //format post_data to query string
+  qs = '';
+  for(data_item in post_data){
+    qs += "&" + DBTABLE + "[" + data_item + "]=" + post_data[data_item];
+  }
+
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", BASE + '' + url + '?auth_token=' + AUTH_TOKEN +'&callback=?' + qs, true);
+  xmlhttp.send();
+}
+
+
 
 JSActiveModel.klass = {
   all : function(url, handler){
