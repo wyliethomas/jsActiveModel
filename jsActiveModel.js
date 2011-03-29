@@ -34,29 +34,36 @@ JSActiveModel.parms = {
 
 JSActiveModel.prototype = {
   update : function(url, handler){
-    JSActiveModel.post(url, post_data, function(i){
+    JSActiveModel.send_post(url, post_data, function(i){
     });
   },
   create : function(url, handler){
-    JSActiveModel.post(url, post_data, function(i){
+    JSActiveModel.send_post(url, post_data, function(i){
     });
   },
-  destroy : function(){
+  destroy : function(url, handler){
+    JSActiveModel.send_query(url, function(i){
+    });
   }
 }
 
-JSActiveModel.post = function(url, post_data, handler){
-  //format post_data to query string
+//prep and send data via query string for posting
+JSActiveModel.send_post = function(url, post_data, handler){
   qs = '';
   for(data_item in post_data){
     qs += "&" + DBTABLE + "[" + data_item + "]=" + post_data[data_item];
   }
-
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.open("GET", BASE + '' + url + '?auth_token=' + AUTH_TOKEN +'&callback=?' + qs, true);
   xmlhttp.send();
 }
 
+//send url for find and destroy purposes
+JSActiveModel.send_query = function(url, handler){
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", BASE + '' + url + '?auth_token=' + AUTH_TOKEN +'&callback=?', true);
+  xmlhttp.send();
+}
 
 
 JSActiveModel.klass = {

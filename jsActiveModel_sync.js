@@ -208,10 +208,10 @@ JSActiveModelSync.klass = {
       });
     }
   },//end create
-  destroy : function(id){
+  destroy : function(url, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
-      function insertHandle(tx, results){
+      function deleteHandle(tx, results){
         tx.executeSql('DELETE FROM ' + DBTABLE + ' WHERE jsam_id = ' + id );
       }
       function successHandle(){
@@ -222,7 +222,13 @@ JSActiveModelSync.klass = {
       function errorHandle(err){
         handler(err);
       }
-      db.transaction(insertHandle, errorHandle, successHandle);
+      if(this.parms['isSyncable']){
+        db.transaction(deleteHandle, errorHandle, successHandle);
+      }else{
+        JSActiveModel.prototype.destroy(url, function(j){
+          handler(j);
+        });
+      }
   },//end destroy
   save : function(){
     console.log('test');
