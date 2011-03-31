@@ -101,7 +101,6 @@ JSActiveModelSync.klass = {
           rows = results.rows.item(i);
           rt.push(rows);
         }
-        console.log(rt);
         handler(rt);
       }
     }
@@ -202,7 +201,6 @@ JSActiveModelSync.klass = {
     if(this.parms['isSyncable']){
       db.transaction(insertHandle, errorHandle, successHandle);
     }else{
-      console.log(url);
       JSActiveModel.prototype.create(url, function(j){
         handler(j);
       });
@@ -231,7 +229,6 @@ JSActiveModelSync.klass = {
       }
   },//end destroy
   save : function(){
-    console.log('test');
   }//end save
 }
 

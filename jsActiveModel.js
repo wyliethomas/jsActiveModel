@@ -35,14 +35,17 @@ JSActiveModel.parms = {
 JSActiveModel.prototype = {
   update : function(url, handler){
     JSActiveModel.send_post(url, post_data, function(i){
+      handler(i);
     });
   },
   create : function(url, handler){
     JSActiveModel.send_post(url, post_data, function(i){
+      handler(i)
     });
   },
   destroy : function(url, handler){
-    JSActiveModel.send_query(url, function(i){
+    JSActiveModel.req(url, function(i){
+      handler(i);
     });
   }
 }
@@ -53,9 +56,17 @@ JSActiveModel.send_post = function(url, post_data, handler){
   for(data_item in post_data){
     qs += "&" + DBTABLE + "[" + data_item + "]=" + post_data[data_item];
   }
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("GET", BASE + '' + url + '?auth_token=' + AUTH_TOKEN +'&callback=?' + qs, true);
-  xmlhttp.send();
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url + '?auth_token=' + AUTH_TOKEN + '' + qs, true);
+  xhr.onreadystatechange = onResult;
+  xhr.send(null);
+
+  function onResult(){
+    if(xhr.readyState == 4){
+      res = JSON.parse(xhr.responseText);
+      handler(res);
+    }
+  }
 }
 
 //send url for find and destroy purposes
@@ -81,9 +92,8 @@ JSActiveModel.klass = {
     });
   },
   find : function(url, handler){
-    $.getJSON(url + '?auth_token=' + AUTH_TOKEN +'&callback=?', function(j){
-      //TODO:if this is syncable then we need to sync this pull into the local DB
-      handler(j);
+    JSActiveModel.req(url, function(i){
+      handler(i);
     });
   }
 };
