@@ -140,8 +140,6 @@ JSActiveModelSync.klass = {
       });
     }
   },
-  find_by_sql : function(){
-  },
   update : function(url, id, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
@@ -175,31 +173,31 @@ JSActiveModelSync.klass = {
   create : function(url, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
-    JSActiveModelSync.prototype.auto_increment(DBTABLE, function(auto_handle){
-      function insertHandle(tx, results){
-        //prep post_data to have right values for right columns
-        data = [];
-        for(column in DBCOLUMNS){
-         if(DBCOLUMNS[column] in post_data){
-          data.push('"' + post_data[DBCOLUMNS[column]] + '"');
-         }else{
-          data.push("null");
-         }
-        }
-        keys = DBCOLUMNS + ', jsam_id';
-        values = data + ', ' + auto_handle;
-        tx.executeSql('INSERT INTO ' + DBTABLE + '(' + keys + ') VALUES (' + values + ')' );
-        tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
-      }
-      function successHandle(){
-        //trigger sync here?
-      }
-      function errorHandle(err){
-        handler(err);
-      }
-    }); //auto increment before creating the record
     if(this.parms['isSyncable']){
-      db.transaction(insertHandle, errorHandle, successHandle);
+      JSActiveModelSync.prototype.auto_increment(DBTABLE, function(auto_handle){
+        function insertHandle(tx, results){
+          //prep post_data to have right values for right columns
+          data = [];
+          for(column in DBCOLUMNS){
+           if(DBCOLUMNS[column] in post_data){
+            data.push('"' + post_data[DBCOLUMNS[column]] + '"');
+           }else{
+            data.push("null");
+           }
+          }
+          keys = DBCOLUMNS + ', jsam_id';
+          values = data + ', ' + auto_handle;
+          tx.executeSql('INSERT INTO ' + DBTABLE + '(' + keys + ') VALUES (' + values + ')' );
+          tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
+        }
+        function successHandle(){
+          //trigger sync here?
+        }
+        function errorHandle(err){
+          handler(err);
+        }
+        db.transaction(insertHandle, errorHandle, successHandle);
+      }); //auto increment before creating the record
     }else{
       JSActiveModel.prototype.create(url, function(j){
         handler(j);
