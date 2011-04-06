@@ -88,6 +88,7 @@ JSActiveModel.req = function(url, handler){
 JSActiveModel.klass = {
   all : function(url, handler){
     JSActiveModel.req(url, function(i){
+      //insert new ones
       handler(i);
     });
   },

@@ -9,7 +9,8 @@ JSActiveModel.inheritKlass(JSActiveModelSync, JSActiveModel);
 
 JSActiveModelSync.parms = {
 }
-//proto methods
+
+/*DB methods*/
 JSActiveModelSync.prototype.init = function(parms){
   JSActiveModelSync.prototype.dbsetup(parms);
 }
@@ -39,6 +40,24 @@ JSActiveModelSync.prototype.dbopen = function(parms){
     return false;
   }
 }
+
+
+/*Housekeeping methods*/
+JSActiveModelSync.prototype.last_id = function(DBTABLE, auto_handle){
+  function queryHandle(tx){
+    tx.executeSql('SELECT MAX(id) AS last_id FROM ' + DBTABLE, [], querySuccess, errorHandle );
+  }
+  function querySuccess(tx, results){
+    for (var i=0; i<results.rows.length; i++) {
+      var row = results.rows.item(i);
+      last_id = row['last_id'] + 1;
+    }
+    auto_handle(last_id);
+  }
+  function errorHandle(err){
+  }
+  db.transaction(queryHandle, errorHandle);
+}//end last_id
 JSActiveModelSync.prototype.auto_increment = function(DBTABLE, auto_handle){
   function queryHandle(tx){
     tx.executeSql('SELECT MAX(jsam_id) AS last_jsam_id FROM ' + DBTABLE, [], querySuccess, errorHandle );
@@ -54,7 +73,7 @@ JSActiveModelSync.prototype.auto_increment = function(DBTABLE, auto_handle){
     handler(err);
   }
   db.transaction(queryHandle, errorHandle);
-}
+}//end auto_increment
 JSActiveModelSync.prototype.audit_update = function(DBTABLE, id, keyvals){
   function queryHandle(tx){
     tx.executeSql('UPDATE ' + DBTABLE + '_AUDIT SET ' + keyvals + ' WHERE jsam_id = ' + id );
@@ -67,7 +86,7 @@ JSActiveModelSync.prototype.audit_update = function(DBTABLE, id, keyvals){
     handler(err);
   }
   db.transaction(queryHandle, errorHandle);
-}
+}//end audit_update
 JSActiveModelSync.prototype.audit_delete = function(DBTABLE, id){
   function queryHandle(tx){
     tx.executeSql('DELETE FROM ' + DBTABLE + '_AUDIT WHERE jsam_id = ' + id );
@@ -80,7 +99,31 @@ JSActiveModelSync.prototype.audit_delete = function(DBTABLE, id){
     handler(err);
   }
   db.transaction(queryHandle, errorHandle);
-}
+}//end audit delete
+JSActiveModelSync.prototype.insert = function(DBTABLE, post_data){
+  function insertHandle(tx, results){
+    //prep post_data to have right values for right columns
+    data = [];
+    for(column in DBCOLUMNS){
+     if(DBCOLUMNS[column] in post_data){
+      data.push('"' + post_data[DBCOLUMNS[column]] + '"');
+     }else{
+      data.push("null");
+     }
+    }
+    keys = DBCOLUMNS + ', jsam_id';
+    values = data + ', ' + post_data.id;
+    tx.executeSql('INSERT INTO ' + DBTABLE + '(' + keys + ') VALUES (' + values + ')' );
+  }
+  function successHandle(){
+  }
+  function errorHandle(err){
+    handler(err);
+    alert('fail');
+  }
+  db.transaction(insertHandle, errorHandle, successHandle);
+}//end insert
+
 
 
 
@@ -88,12 +131,12 @@ JSActiveModelSync.prototype.audit_delete = function(DBTABLE, id){
 JSActiveModelSync.klass = {
   all : function(url, handler){
     DBTABLE = this.parms['DBTABLE'];
+    DBCOLUMNS = this.parms['DBCOLUMNS'];
     JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
     function queryHandle(tx){
       tx.executeSql('SELECT * FROM ' + DBTABLE, [], querySuccess, errorHandle );
     }
     function querySuccess(tx, results){
-      //sync here?
       if(typeof(handler) == 'function'){
         rt = []
         for(i=0;i<results.rows.length;i++){
@@ -227,7 +270,24 @@ JSActiveModelSync.klass = {
       }
   },//end destroy
   save : function(){
-  }//end save
+  },//end save
+  sync : function(url){
+    //I wanted to make this a prototype method but I couldnt get parms up there. so its here for now
+    DBTABLE = this.parms['DBTABLE'];
+    DBCOLUMNS = this.parms['DBCOLUMNS'];
+    JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
+    JSActiveModelSync.prototype.last_id(DBTABLE, function(last_id){
+      JSActiveModel.req(url, function(j){
+        for(i=0;i<j.length;i++){
+          j[i].jsam_id = j[i].id;
+          post_data = j[i];
+          if(post_data.id > last_id){//assume that ID's that are higher need to be inserted
+            JSActiveModelSync.prototype.insert(DBTABLE, post_data)//insert this record
+          }
+        }
+      });
+    });
+  }//end sync
 }
 
 JSActiveModel.hideKlass(JSActiveModelSync);
