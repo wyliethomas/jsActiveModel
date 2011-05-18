@@ -100,7 +100,7 @@ JSActiveModelSync.prototype.audit_delete = function(DBTABLE, id){
   }
   db.transaction(queryHandle, errorHandle);
 }//end audit delete
-JSActiveModelSync.prototype.insert = function(DBTABLE, post_data){
+JSActiveModelSync.prototype.sync_pull = function(DBTABLE, post_data){
   function insertHandle(tx, results){
     //prep post_data to have right values for right columns
     data = [];
@@ -123,6 +123,31 @@ JSActiveModelSync.prototype.insert = function(DBTABLE, post_data){
   }
   db.transaction(insertHandle, errorHandle, successHandle);
 }//end insert
+JSActiveModelSync.prototype.sync_push = function(DBTABLE){
+  function queryHandle(tx){
+    tx.executeSql('SELECT * FROM ' + DBTABLE + '_AUDIT ', [], querySuccess, errorHandle );
+  }
+  function querySuccess(tx, results){
+    for(i=0;i<results.rows.length;i++){
+      //case for what type of a push
+      switch(type){
+        case 'create':
+          alert('create');
+          break;
+        case 'update':
+          alert('update');
+          break;
+        case 'delete':
+          alert('delete');
+          break;
+    }
+  }
+  function errorHandle(err){
+    handler(err);
+  }
+    db.transaction(queryHandle, errorHandle);
+  }
+}
 
 
 
@@ -228,8 +253,8 @@ JSActiveModelSync.klass = {
             data.push("null");
            }
           }
-          keys = DBCOLUMNS + ', jsam_id';
-          values = data + ', ' + auto_handle;
+          keys = DBCOLUMNS + ', jsam_id, type, url';
+          values = data + ', ' + auto_handle + ', create, ' + url;
           tx.executeSql('INSERT INTO ' + DBTABLE + '(' + keys + ') VALUES (' + values + ')' );
           tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
         }
@@ -252,6 +277,7 @@ JSActiveModelSync.klass = {
     DBCOLUMNS = this.parms['DBCOLUMNS'];
       function deleteHandle(tx, results){
         tx.executeSql('DELETE FROM ' + DBTABLE + ' WHERE jsam_id = ' + id );
+        //tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
       }
       function successHandle(){
         //audit table cleanup
@@ -276,17 +302,21 @@ JSActiveModelSync.klass = {
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
     JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
+    //pull new records from the api
     JSActiveModelSync.prototype.last_id(DBTABLE, function(last_id){
       JSActiveModel.req(url, function(j){
         for(i=0;i<j.length;i++){
           j[i].jsam_id = j[i].id;
           post_data = j[i];
           if(post_data.id > last_id){//assume that ID's that are higher need to be inserted
-            JSActiveModelSync.prototype.insert(DBTABLE, post_data)//insert this record
+            JSActiveModelSync.prototype.sync_pull(DBTABLE, post_data)//insert this record
           }
         }
       });
     });
+    //clear out the audit table
+    JSActiveModelSync.prototype.sync_push(DBTABLE)//clean up audit table for this model
+
   }//end sync
 }
 
