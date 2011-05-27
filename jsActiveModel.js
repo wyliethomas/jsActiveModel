@@ -63,7 +63,11 @@ JSActiveModel.send_post = function(url, post_data, handler){
 
   function onResult(){
     if(xhr.readyState == 4){
-      res = JSON.parse(xhr.responseText);
+      if(xhr.responseText == ""){
+        res = {};
+      }else{
+        res = JSON.parse(xhr.responseText);
+      }
       handler(res);
     }
   }
@@ -78,7 +82,11 @@ JSActiveModel.req = function(url, handler){
 
   function onResult(){
     if(xhr.readyState == 4){
-      res = JSON.parse(xhr.responseText);
+      if(xhr.responseText == ""){
+        res = {};
+      }else{
+        res = JSON.parse(xhr.responseText);
+      }
       handler(res);
     }
   }

@@ -189,12 +189,44 @@ JSActiveModelSync.klass = {
     }
   },
   find : function(url, id, handler){
+    var DBTABLE = this.parms['DBTABLE'];
     function queryHandle(tx){
       tx.executeSql('SELECT * FROM ' + DBTABLE + ' WHERE jsam_id = ' + id, [], querySuccess, errorHandle );
     }
     function querySuccess(tx, results){
       if(typeof(handler) == 'function'){
         handler(results.rows.item(0));
+      }
+    }
+    function errorHandle(err){
+      handler(err);
+    }
+    if(this.parms['isSyncable']){
+      db.transaction(queryHandle, errorHandle);
+    }else{
+      JSActiveModel.find(url, function(j){
+        handler(j);
+      });
+    }
+  },
+  /*  Useage for find_by()
+  *   [Model Name].find_by([url to api], [db column], [value], [handler])
+  *   returns result from "SELECT * FROM [DBTABLE} WHERE [db column] = [value]"
+  */
+  find_by : function(url, key, value, handler){
+    var DBTABLE = this.parms['DBTABLE'];
+    function queryHandle(tx){
+      tx.executeSql("SELECT * FROM " + DBTABLE + " WHERE " + key + " = ?", [value], querySuccess, errorHandle );
+    }
+    function querySuccess(tx, results){
+      if(typeof(handler) == 'function'){
+        rt = []
+        for(i=0;i<results.rows.length;i++){
+          rows = {};
+          rows = results.rows.item(i);
+          rt.push(rows);
+        }
+        handler(rt);
       }
     }
     function errorHandle(err){
