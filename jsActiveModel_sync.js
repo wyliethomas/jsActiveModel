@@ -43,6 +43,26 @@ JSActiveModelSync.prototype.dbopen = function(parms){
 
 
 /*Housekeeping methods*/
+JSActiveModelSync.prototype.if_exist = function(DBTABLE, DBCOLUMNS, data, auto_handle){
+  function queryHandle(tx){
+    var remote_id = data.id;
+    tx.executeSql('SELECT * FROM ' + DBTABLE + ' WHERE jsam_id = ?', [remote_id], querySuccess, errorHandle );
+  }
+  function querySuccess(tx, results){
+    if(results.rows.length == 0){
+      JSActiveModelSync.prototype.sync_pull(DBTABLE, DBCOLUMNS, data)//insert this record
+      auto_handle('0');
+    }else{
+      console.log('already here');
+      //TODO:: Update method call here
+      auto_handle(id);
+    }
+  }
+  function errorHandle(err){
+    console.log(err);
+  }
+  db.transaction(queryHandle, errorHandle);
+}//end last_id
 JSActiveModelSync.prototype.last_id = function(DBTABLE, auto_handle){
   function queryHandle(tx){
     tx.executeSql('SELECT MAX(id) AS last_id FROM ' + DBTABLE, [], querySuccess, errorHandle );
@@ -100,7 +120,7 @@ JSActiveModelSync.prototype.audit_delete = function(DBTABLE, id){
   }
   db.transaction(queryHandle, errorHandle);
 }//end audit delete
-JSActiveModelSync.prototype.sync_pull = function(DBTABLE, post_data){
+JSActiveModelSync.prototype.sync_pull = function(DBTABLE, DBCOLUMNS, post_data){
   function insertHandle(tx, results){
     //prep post_data to have right values for right columns
     data = [];
@@ -119,7 +139,6 @@ JSActiveModelSync.prototype.sync_pull = function(DBTABLE, post_data){
   }
   function errorHandle(err){
     handler(err);
-    alert('fail');
   }
   db.transaction(insertHandle, errorHandle, successHandle);
 }//end insert
@@ -331,21 +350,24 @@ JSActiveModelSync.klass = {
   },//end save
   sync : function(url){
     //I wanted to make this a prototype method but I couldnt get parms up there. so its here for now
-    DBTABLE = this.parms['DBTABLE'];
-    DBCOLUMNS = this.parms['DBCOLUMNS'];
+    var DBTABLE = this.parms['DBTABLE'];
+    var DBCOLUMNS = this.parms['DBCOLUMNS'];
     JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
-    //pull new records from the api
-    JSActiveModelSync.prototype.last_id(DBTABLE, function(last_id){
+
       JSActiveModel.req(url, function(j){
         for(i=0;i<j.length;i++){
           j[i].jsam_id = j[i].id;
           post_data = j[i];
-          if(post_data.id > last_id){//assume that ID's that are higher need to be inserted
-            JSActiveModelSync.prototype.sync_pull(DBTABLE, post_data)//insert this record
-          }
+          JSActiveModelSync.prototype.if_exist(DBTABLE, DBCOLUMNS, post_data, function(exist){
+            if(exist == 0){
+              //it was created
+            }else{
+              //it was updated
+            }
+          });
         }
       });
-    });
+
     //clear out the audit table
     JSActiveModelSync.prototype.sync_push(DBTABLE)//clean up audit table for this model
 
