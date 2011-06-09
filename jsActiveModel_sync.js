@@ -174,8 +174,8 @@ JSActiveModelSync.prototype.sync_push = function(DBTABLE){
 //klass methods
 JSActiveModelSync.klass = {
   all : function(url, handler){
-    DBTABLE = this.parms['DBTABLE'];
-    DBCOLUMNS = this.parms['DBCOLUMNS'];
+    var DBTABLE = this.parms['DBTABLE'];
+    var DBCOLUMNS = this.parms['DBCOLUMNS'];
     JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
     function queryHandle(tx){
       tx.executeSql('SELECT * FROM ' + DBTABLE, [], querySuccess, errorHandle );
