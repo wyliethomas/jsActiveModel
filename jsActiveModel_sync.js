@@ -197,14 +197,7 @@ JSActiveModelSync.klass = {
     if(this.parms['isSyncable']){
       db.transaction(queryHandle, errorHandle);
     }else{
-      JSActiveModel.all(url, function(j){
-        //NOTE: since this is unsyncable, and the views depend on jsam_id
-        //we will assign the jsam_id to be the same as the id from the api
-        for(i=0;i<j.length;i++){
-          j[i].jsam_id = j[i].id;
-        }
-        handler(j);
-      });
+      db.transaction(queryHandle, errorHandle);
     }
   },
   find : function(url, id, handler){
@@ -223,9 +216,7 @@ JSActiveModelSync.klass = {
     if(this.parms['isSyncable']){
       db.transaction(queryHandle, errorHandle);
     }else{
-      JSActiveModel.find(url, function(j){
-        handler(j);
-      });
+      db.transaction(queryHandle, errorHandle);
     }
   },
   /*  Useage for find_by()
@@ -262,7 +253,8 @@ JSActiveModelSync.klass = {
   update : function(url, id, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
-      function insertHandle(tx, results){
+      JSActiveModelSync.prototype.auto_increment(DBTABLE, function(auto_handle){
+        function insertHandle(tx, results){
         //prep post_data to have right values for right columns
         keyvals = '';
         for(column in DBCOLUMNS){
@@ -272,27 +264,21 @@ JSActiveModelSync.klass = {
         }
         keyvals = keyvals.substring(0, keyvals.length-2);
         tx.executeSql('UPDATE ' + DBTABLE + ' SET ' + keyvals + ' WHERE jsam_id = ' + id );
-      }
-      function successHandle(){
-        //audit table cleanup
-        JSActiveModelSync.prototype.audit_update(DBTABLE, id, keyvals);
-        //trigger sync here?
-      }
-      function errorHandle(err){
-        handler(err);
-      }
-    if(this.parms['isSyncable']){
-      db.transaction(insertHandle, errorHandle, successHandle);
-    }else{
-      JSActiveModel.prototype.update(url, function(j){
-        handler(j);
-      });
-    }
+        }
+        function successHandle(){
+          //trigger sync here?
+          handler();
+        }
+        function errorHandle(err){
+          console.log(err);
+          handler(err);
+        }
+        db.transaction(insertHandle, errorHandle, successHandle);
+      }); //auto increment before creating the record
   },//end update
   create : function(url, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
-    if(this.parms['isSyncable']){
       JSActiveModelSync.prototype.auto_increment(DBTABLE, function(auto_handle){
         function insertHandle(tx, results){
           //prep post_data to have right values for right columns
@@ -304,36 +290,35 @@ JSActiveModelSync.klass = {
             data.push("null");
            }
           }
-          keys = DBCOLUMNS + ', jsam_id, type, url';
-          values = data + ', ' + auto_handle + ', create, ' + url;
+          keys = DBCOLUMNS + ', jsam_id';
+          values = data + ', ' + auto_handle ;
+          console.log(keys);
+          console.log(values);
           tx.executeSql('INSERT INTO ' + DBTABLE + '(' + keys + ') VALUES (' + values + ')' );
           tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
         }
         function successHandle(){
           //trigger sync here?
+          handler();
         }
         function errorHandle(err){
+          console.log(err);
           handler(err);
         }
         db.transaction(insertHandle, errorHandle, successHandle);
       }); //auto increment before creating the record
-    }else{
-      JSActiveModel.prototype.create(url, function(j){
-        handler(j);
-      });
-    }
   },//end create
-  destroy : function(url, handler){
+  destroy : function(url, id, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
       function deleteHandle(tx, results){
         tx.executeSql('DELETE FROM ' + DBTABLE + ' WHERE jsam_id = ' + id );
-        //tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
       }
       function successHandle(){
         //audit table cleanup
         JSActiveModelSync.prototype.audit_delete(DBTABLE, id)
         //trigger sync here?
+        handler();
       }
       function errorHandle(err){
         handler(err);
@@ -341,9 +326,7 @@ JSActiveModelSync.klass = {
       if(this.parms['isSyncable']){
         db.transaction(deleteHandle, errorHandle, successHandle);
       }else{
-        JSActiveModel.prototype.destroy(url, function(j){
-          handler(j);
-        });
+        db.transaction(deleteHandle, errorHandle, successHandle);
       }
   },//end destroy
   save : function(){
