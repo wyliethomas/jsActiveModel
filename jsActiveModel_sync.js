@@ -202,6 +202,7 @@ JSActiveModelSync.klass = {
   },
   find : function(url, id, handler){
     var DBTABLE = this.parms['DBTABLE'];
+    JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
     function queryHandle(tx){
       tx.executeSql('SELECT * FROM ' + DBTABLE + ' WHERE jsam_id = ' + id, [], querySuccess, errorHandle );
     }
@@ -225,6 +226,7 @@ JSActiveModelSync.klass = {
   */
   find_by : function(url, key, value, handler){
     var DBTABLE = this.parms['DBTABLE'];
+    JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
     function queryHandle(tx){
       tx.executeSql("SELECT * FROM " + DBTABLE + " WHERE " + key + " = ?", [value], querySuccess, errorHandle );
     }
@@ -240,14 +242,48 @@ JSActiveModelSync.klass = {
       }
     }
     function errorHandle(err){
+      console.log("ERROR:");
+      console.log(err);
       handler(err);
     }
     if(this.parms['isSyncable']){
       db.transaction(queryHandle, errorHandle);
     }else{
-      JSActiveModel.find(url, function(j){
-        handler(j);
-      });
+      db.transaction(queryHandle, errorHandle);
+    }
+  },
+  /*  Useage for find_by_sql()
+  *   [Model Name].find_by_sql([url to api], [your sql], [handler])
+  *   returns result from "SELECT * FROM [DBTABLE} WHERE [db column] = [value]"
+  *   It appears that values for your sql need to be in quotes like this:
+  *   'SELECT * FROM assignments WHERE task_id = "'+ task +'" AND day = "'+ day +'"'
+  */
+  find_by_sql : function(url, sql, handler){
+    var DBTABLE = this.parms['DBTABLE'];
+    //JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
+    function queryHandle(tx){
+      tx.executeSql(sql, [], querySuccess, errorHandle );
+    }
+    function querySuccess(tx, results){
+      if(typeof(handler) == 'function'){
+        rt = []
+        for(i=0;i<results.rows.length;i++){
+          rows = {};
+          rows = results.rows.item(i);
+          rt.push(rows);
+        }
+        handler(rt);
+      }
+    }
+    function errorHandle(err){
+      console.log("ERROR:");
+      console.log(err);
+      handler(err);
+    }
+    if(this.parms['isSyncable']){
+      db.transaction(queryHandle, errorHandle);
+    }else{
+      db.transaction(queryHandle, errorHandle);
     }
   },
   update : function(url, id, post_data, handler){
@@ -292,8 +328,6 @@ JSActiveModelSync.klass = {
           }
           keys = DBCOLUMNS + ', jsam_id';
           values = data + ', ' + auto_handle ;
-          console.log(keys);
-          console.log(values);
           tx.executeSql('INSERT INTO ' + DBTABLE + '(' + keys + ') VALUES (' + values + ')' );
           tx.executeSql('INSERT INTO ' + DBTABLE + '_AUDIT(' + keys + ') VALUES (' + values + ')' );
         }
