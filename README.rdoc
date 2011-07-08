@@ -1,26 +1,13 @@
 jsActiveModel
-
-*What is it?*
-A model layer for client side javascript frameworks to be able to save data to the client and sync to a server side API when a connection is available.
-
-Example:
-
-In the model:
-Project.parms = {
-  DATABASE: 'myapp',
-  DBVERSION: '1.0',
-  DBDESCRIPTION: 'myproject description',
-  DBSIZE: 2 * 1024 * 1024,
-  DBTABLE: 'projects',
-  DBCOLUMNS: ['id', 'name', 'flag_archive', 'created_at', 'updated_at']
-};
-Project.prototype = new JSActiveModelSync();
-Project.prototype.constructor = Project;
-Project.prototype.parent = JSActiveModelSync.prototype;
-
-JSActiveModel.inheritKlass(Project, JSActiveModelSync);
-JSActiveModel.hideKlass(Project);
+=========
+jsActiveModel is intended to be a model layer for javascript frameworks that saves model data locally to the Web SQL database and will also sync offline data with an api.
 
 
-Then in the controller:
-Project.all();
+Status
+------------
+All of the local storage is currently using the Web SQL Database. With the recent announcement of the W3C abandoning Web SQL for indexedDB, I intend to add/replace the new standard into the project as soon as it is available.
+
+
+For best results
+------------
+The framework in the examples are created using the [Kubari](https://github.com/Reisender/Kubari) framework. It's the best JS framework for my purposes. I would like to see what could be done with other frameworks.
