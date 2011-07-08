@@ -23,24 +23,24 @@ Here is a basic model structure:
 
 posts.js
 
-  var Posts = function(){};
+    var Posts = function(){};
 
-  Posts.parms = {
-    isSyncable: false,
-    DATABASE: 'offline_demo',
-    DBVERSION: '1.0',
-    DBDESCRIPTION: 'Offline Demo',
-    DBSIZE: 2 * 1024 * 1024,
-    DBTABLE: 'posts',
-    DBCOLUMNS: ['id', 'subject', 'content']
-  };
+    Posts.parms = {
+      isSyncable: false,
+      DATABASE: 'offline_demo',
+      DBVERSION: '1.0',
+      DBDESCRIPTION: 'Offline Demo',
+      DBSIZE: 2 * 1024 * 1024,
+      DBTABLE: 'posts',
+      DBCOLUMNS: ['id', 'subject', 'content']
+    };
 
-  Posts.prototype = new JSActiveModelSync();
-  Posts.prototype.constructor = Posts;
-  Posts.prototype.parent = JSActiveModelSync.prototype;
+    Posts.prototype = new JSActiveModelSync();
+    Posts.prototype.constructor = Posts;
+    Posts.prototype.parent = JSActiveModelSync.prototype;
 
-  JSActiveModel.inheritKlass(Posts, JSActiveModelSync);
-  JSActiveModel.hideKlass(Posts);
+    JSActiveModel.inheritKlass(Posts, JSActiveModelSync);
+    JSActiveModel.hideKlass(Posts);
 
 
 Here is how it can be used
