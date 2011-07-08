@@ -43,6 +43,7 @@ posts.js
 
 
 Here is how it can be used
+
       Posts.all('api.myapphere.com/posts', function(post_data){
         //do stuff here
       });
@@ -52,9 +53,11 @@ You probably guessed that this will fetch all of the posts.
 It will first grab whats in the local DB, then pull new posts from the API and add that to the local DB. Then it will find any post that have not yet been pushed to the API and push them (incase they were created offline). 
 
 If you dont want a particular model call to go to your API you can do this.
+
       Posts.all('', function(post_data){
         //do stuff here
       });
+
 And it will grab only offline posts.
 
 
