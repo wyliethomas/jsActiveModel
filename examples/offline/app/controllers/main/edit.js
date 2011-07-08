@@ -20,6 +20,11 @@ Fr.Controller.create('offline','main/edit', function(){
             post_data[key] = val;
           }
         });
+        $('textarea').each(function(index, value){
+          var key = $(this)[0].name;
+          var val = $(this).val();
+          post_data[key] = val;
+        });
         id = $(this).attr('data-id');
 
         Posts.update('na', id ,post_data, function(update_handle){

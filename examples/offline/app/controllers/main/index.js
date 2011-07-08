@@ -13,7 +13,7 @@ Fr.Controller.create('offline','main/index', function(){
       });
 
       $('.list .post a').click(function(){
-        var jsam_id = $(this).attr('data-jsam-id');
+        var jsam_id = $(this).attr('data-id');
         Fr.offline.renderViewTo({ view: $(this).attr('href'), target: '#content', transition: 'slide-left', args: {jsam_id: jsam_id} });
         return false;
       });

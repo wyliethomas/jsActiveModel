@@ -1,13 +1,18 @@
-<h3>Edit <%= post_data.subject %></h3>
-<div class="nav">
-  <%= link_to('Back to home', 'main/index') %>
+<div class="content_wrapper">
+  <div class="nav">
+    <%= link_to('Back to home', 'main/index') %>
+  </div>
+  <h3>Edit <%= post_data.subject %></h3>
+
+
+  <%= form_tag('main/edit', {id: 'post_form', 'data-id': jsam_id}) %>
+    <p><label for="subject">Subject</label>
+      <%= input_field_tag('subject', post_data.subject) %>
+    </p>
+    <p><label for="content">Content</label>
+      <%= text_area_tag('content') %>
+    </p>
+      <%= submit_tag('Save') %>
+    </p>
+  <%= form_tag_end() %>
 </div>
-
-
-<%= form_tag('main/edit', {id: 'post_form', 'data-id': jsam_id}) %>
-  <p><label for="subject">Subject</label>
-    <%= input_field_tag('subject', post_data.subject) %>
-  </p>
-    <%= submit_tag('Save') %>
-  </p>
-<%= form_tag_end() %>

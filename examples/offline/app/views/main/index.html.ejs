@@ -1,12 +1,17 @@
-<span class="nav"><%= link_to('new post', 'main/add') %></span>
+<div class="content_wrapper">
+  <div class="nav">
+    <%= link_to('new post', 'main/add') %>
+  </div>
   <ul class="list" id="listing">
     <% $.each(post_data, function(index, value) { %>
       <li class="post">
-        <%= value.subject %><br />
+        <div class="subject"><%= value.subject %></div>
         <%= value.content %>
+        <p><%= link_to('edit', 'main/edit', {'data-id': value.jsam_id}) %></p>
       </li>
     <% }); %>
   </ul>
   <% if(post_data == ""){ %>
     <h1>No Data</h1>
   <% } %>
+</div>

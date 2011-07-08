@@ -1,0 +1,30 @@
+body{
+  margin: 0;
+  border: 0;
+  font-family: Arial, Helvetica
+}
+
+#header{
+  width: 100%;
+  background: blue;
+  height: 60px;
+  color: #fff;  
+  padding: 10px;
+}
+
+.content_wrapper{
+  padding: 10px;
+}
+
+.list{
+  list-style: none;
+}
+
+.subject{
+  font-weight: bold;
+  font-style: bold;
+}
+
+.nav{
+  float: right;
+}

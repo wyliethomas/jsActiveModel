@@ -1,15 +1,17 @@
-<h3>Add a new post</h3>
-<div class="nav">
-  <%= link_to('Back to home', 'main/index') %>
-</div>
+<div class="content_wrapper">
+  <div class="nav">
+    <%= link_to('Back to home', 'main/index') %>
+  </div>
+  <h3>Add a new post</h3>
 
-<%= form_tag('main/add', {id: 'post_form'}) %>
-  <p><label for="subject">Subject</label>
-    <%= input_field_tag('subject') %>
-  </p>
-  <p><label for="content">Content</label>
-    <%= text_area_tag('content') %>
-  </p>
-    <%= submit_tag('Save') %>
-  </p>
-<%= form_tag_end() %>
+  <%= form_tag('main/add', {id: 'post_form'}) %>
+    <p><label for="subject">Subject</label>
+      <%= input_field_tag('subject') %>
+    </p>
+    <p><label for="content">Content</label>
+      <%= text_area_tag('content') %>
+    </p>
+      <%= submit_tag('Save') %>
+    </p>
+  <%= form_tag_end() %>
+</div>
