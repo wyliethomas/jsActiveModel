@@ -1,0 +1,3 @@
+[submodule "examples/offline/lib/Kubari"]
+	path = examples/offline/lib/Kubari
+	url = https://github.com/Reisender/Kubari.git

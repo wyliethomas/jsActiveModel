@@ -1,0 +1,12 @@
+<span class="nav"><%= link_to('new post', 'main/add') %></span>
+  <ul class="list" id="listing">
+    <% $.each(post_data, function(index, value) { %>
+      <li class="post">
+        <%= value.subject %><br />
+        <%= value.content %>
+      </li>
+    <% }); %>
+  </ul>
+  <% if(post_data == ""){ %>
+    <h1>No Data</h1>
+  <% } %>
