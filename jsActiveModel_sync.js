@@ -260,7 +260,7 @@ JSActiveModelSync.klass = {
   */
   find_by_sql : function(url, sql, handler){
     var DBTABLE = this.parms['DBTABLE'];
-    //JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
+    JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
     function queryHandle(tx){
       tx.executeSql(sql, [], querySuccess, errorHandle );
     }
@@ -315,6 +315,7 @@ JSActiveModelSync.klass = {
   create : function(url, post_data, handler){
     DBTABLE = this.parms['DBTABLE'];
     DBCOLUMNS = this.parms['DBCOLUMNS'];
+    JSActiveModelSync.prototype.init(this.parms); //make sure db is available and open
       JSActiveModelSync.prototype.auto_increment(DBTABLE, function(auto_handle){
         function insertHandle(tx, results){
           //prep post_data to have right values for right columns
