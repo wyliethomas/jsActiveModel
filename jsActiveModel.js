@@ -73,6 +73,17 @@ JSActiveModel.send_post = function(url, post_data, handler){
   }
 }
 
+function parseRequest(response){
+  console.log(response);
+}
+
+//send jsonp request
+JSActiveModel.jsonreq = function(url, handler){
+  var script = document.createElement('script');
+  script.setAttribute('src', url);
+  document.getElementsByTagName('head')[0].appendChild(script);
+}
+
 //send url for find and destroy purposes
 JSActiveModel.req = function(url, handler){
   var xhr = new XMLHttpRequest();

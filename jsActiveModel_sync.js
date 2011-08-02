@@ -196,6 +196,7 @@ JSActiveModelSync.klass = {
     }
     if(this.parms['isSyncable']){
       db.transaction(queryHandle, errorHandle);
+      JSActiveModel.jsonreq(url, handler);
     }else{
       db.transaction(queryHandle, errorHandle);
     }
